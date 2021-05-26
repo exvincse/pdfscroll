@@ -68,19 +68,19 @@
                     const pageLoaders = [];
                     for (let i = 0; i < pdf.numPages; i++) {
                         pdf.getPage(i + 1).then(function(page) {
-                            var scale = 1.5;
+                            var scale = 1.25;
                             var viewport = page.getViewport({scale: scale});
                             var viewCanvas = document.createElement('canvas');
                             var context = viewCanvas.getContext('2d');
-                            const zoom = 2;
-                            viewCanvas.height = viewport.height * zoom ;
-                            viewCanvas.width = viewport.width * zoom;
-                            viewCanvas.style.height = viewport.height + 'px';
-                            viewCanvas.style.width = viewport.width + 'px';
+                            // const zoom = 2;
+                            // viewCanvas.height = viewport.height * zoom ;
+                            // viewCanvas.width = viewport.width * zoom;
+                            // viewCanvas.style.height = viewport.height + 'px';
+                            // viewCanvas.style.width = viewport.width + 'px';
                             const renderContext = {
                                 canvasContext: context,
                                 viewport,
-                                transform: [zoom, 0, 0, zoom, 0, 0]
+                                // transform: [zoom, 0, 0, zoom, 0, 0]
                             };
                             page.render(renderContext);
                             container.appendChild(viewCanvas);
