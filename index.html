@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <style>
+            .grid {
+                display: flex;
+                justify-content: center;
+            }
+
+            .grid > * {
+                padding: 10px;
+            }
+
+            .pdf-wrapper {
+                position: relative;
+                border: 2px solid red;
+            }
+
+            .pdf-wrapper.open .pdf-view {
+                max-height: 750px;
+                overflow: auto;
+            }
+
+            .pdf-view {
+                display: flex;
+                flex-direction: column;
+                max-height: 200px;
+                overflow-x: scroll;
+                /* overflow: auto; */
+            }
+
+            .pdf-view.unscroll {
+                overflow: hidden;
+            }
+
+            .pdf-view > * {
+                flex: 0 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="grid">
+            <div>
+                <h3>收合：有卷軸</h3>
+                <button
+                    onclick="selectEl('#pdf_view_01').classList.toggle('open')"
+                >
+                    open/close pdf view
+                </button>
+                <div id="pdf_view_01" class="pdf-wrapper">
+                    <div class="pdf-view"></div>
+                </div>
+            </div>
+        </div>
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.8.335/pdf.min.js"
+            integrity="sha512-SG4yH2eYtAR5eK4/VL0bhqOsIb6AZSWAJjHOCmfhcaqTkDviJFoar/VYdG96iY7ouGhKQpAg3CMJ22BrZvhOUA=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        ></script>
+        <script>
+            viewPdf("example.pdf", selectEl("#pdf_view_01 .pdf-view"));
+            // 9112716163925
+            function viewPdf(url, container) {
+                const loadingTask = pdfjsLib.getDocument(url);
+
+                loadingTask.promise.then(function (pdf) {
+                    const pageOptions = { scale: 1.25 };
+
+                    const pageLoaders = [];
+                    for (let i = 0; i < pdf.numPages; i++) {
+                        pageLoaders.push(pdf.getPage(i + 1));
+                    }
+                    Promise.allSettled(pageLoaders).then((pages) => {
+                        for (const { value: page } of pages) {
+                            const viewport = page.getViewport(pageOptions);
+                            const viewCanvas = document.createElement("canvas");
+                            const context = viewCanvas.getContext("2d");
+
+                            const zoom = 2;
+                            viewCanvas.height = viewport.height * zoom ;
+                            viewCanvas.width = viewport.width * zoom;
+                            viewCanvas.style.height = viewport.height + 'px';
+                            viewCanvas.style.width = viewport.width + 'px';
+                            const renderContext = {
+                                canvasContext: context,
+                                viewport,
+                                transform: [zoom, 0, 0, zoom, 0, 0]
+                            };
+                            page.render(renderContext);
+                            container.appendChild(viewCanvas);
+                        }
+                    });
+                });
+            }
+
+            function selectEl(selector) {
+                return document.querySelector(selector);
+            }
+        </script>
+    </body>
+</html>
