@@ -67,17 +67,11 @@
 
                     const pageLoaders = [];
                     for (let i = 0; i < pdf.numPages; i++) {
-                        pageLoaders.push(pdf.getPage(i + 1));
-                    }
-                    Promise.allSettled(pageLoaders).then((pages) => {
-                        for (const { value: page } of pages) {
-                            const viewport = page.getViewport(pageOptions);
-                            const viewCanvas = document.createElement("canvas");
-                            const context = viewCanvas.getContext("2d");
-
-                            viewCanvas.height = viewport.height ;
-                            viewCanvas.width = viewport.width;
-
+                        pdf.getPage(i + 1).then(function(page) {
+                            var scale = 1.5;
+                            var viewport = page.getViewport({scale: scale});
+                            var viewCanvas = document.createElement('canvas');
+                            var context = viewCanvas.getContext('2d');
                             const zoom = 2;
                             viewCanvas.height = viewport.height * zoom ;
                             viewCanvas.width = viewport.width * zoom;
@@ -90,8 +84,8 @@
                             };
                             page.render(renderContext);
                             container.appendChild(viewCanvas);
-                        }
-                    });
+                        })
+                    }
                 });
             }
 
