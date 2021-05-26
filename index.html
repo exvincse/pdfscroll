@@ -72,6 +72,8 @@
                             var viewport = page.getViewport({scale: scale});
                             var viewCanvas = document.createElement('canvas');
                             var context = viewCanvas.getContext('2d');
+                            viewCanvas.height = viewport.height
+                            viewCanvas.width = viewport.width
                             // const zoom = 2;
                             // viewCanvas.height = viewport.height * zoom ;
                             // viewCanvas.width = viewport.width * zoom;
