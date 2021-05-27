@@ -6,9 +6,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Document</title>
         <style>
+            .grid {
+                display: flex;
+                justify-content: center;
+            }
 
             .grid > * {
-                max-width: 600px;
                 padding: 10px;
             }
 
@@ -17,12 +20,28 @@
                 border: 2px solid red;
             }
 
+            .pdf-wrapper:not(.open)::after {
+                content: "";
+                position: absolute;
+                bottom: 0;
+                width: 100%;
+                height: 25%;
+                display: block;
+                background-image: linear-gradient(
+                    to bottom,
+                    transparent,
+                    white
+                );
+            }
+
             .pdf-wrapper.open .pdf-view {
                 max-height: 750px;
                 overflow: auto;
             }
 
             .pdf-view {
+                display: flex;
+                flex-direction: column;
                 max-height: 200px;
                 overflow: auto;
             }
@@ -49,6 +68,17 @@
                     <div class="pdf-view"></div>
                 </div>
             </div>
+            <div>
+                <h3>收合：無卷軸</h3>
+                <button
+                    onclick="selectEl('#pdf_view_02').classList.toggle('open')"
+                >
+                    open/close pdf view
+                </button>
+                <div id="pdf_view_02" class="pdf-wrapper">
+                    <div class="pdf-view unscroll"></div>
+                </div>
+            </div>
         </div>
         <script
             src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.8.335/pdf.min.js"
@@ -58,36 +88,35 @@
         ></script>
         <script>
             viewPdf("example.pdf", selectEl("#pdf_view_01 .pdf-view"));
-            // 9112716163925
+            viewPdf("example.pdf", selectEl("#pdf_view_02 .pdf-view"));
+
             function viewPdf(url, container) {
                 const loadingTask = pdfjsLib.getDocument(url);
 
                 loadingTask.promise.then(function (pdf) {
-                    const pageOptions = { scale: 1.25 };
+                    const pageOptions = { scale: 0.75 };
 
                     const pageLoaders = [];
                     for (let i = 0; i < pdf.numPages; i++) {
-                        pdf.getPage(i + 1).then(function(page) {
-                            var scale = 1.25;
-                            var viewport = page.getViewport({scale: scale});
-                            var viewCanvas = document.createElement('canvas');
-                            var context = viewCanvas.getContext('2d');
-                            viewCanvas.height = viewport.height
-                            viewCanvas.width = viewport.width
-                            // const zoom = 2;
-                            // viewCanvas.height = viewport.height * zoom ;
-                            // viewCanvas.width = viewport.width * zoom;
-                            // viewCanvas.style.height = viewport.height + 'px';
-                            // viewCanvas.style.width = viewport.width + 'px';
+                        pageLoaders.push(pdf.getPage(i + 1));
+                    }
+                    Promise.allSettled(pageLoaders).then((pages) => {
+                        for (const { value: page } of pages) {
+                            const viewport = page.getViewport(pageOptions);
+                            const viewCanvas = document.createElement("canvas");
+                            const context = viewCanvas.getContext("2d");
+
+                            viewCanvas.height = viewport.height;
+                            viewCanvas.width = viewport.width;
+
                             const renderContext = {
                                 canvasContext: context,
                                 viewport,
-                                // transform: [zoom, 0, 0, zoom, 0, 0]
                             };
                             page.render(renderContext);
                             container.appendChild(viewCanvas);
-                        })
-                    }
+                        }
+                    });
                 });
             }
 
